@@ -1,11 +1,16 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Outfit } from "next/font/google";
+import { Inter, Sora } from "next/font/google";
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+});
+
+const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-heading",
 });
 
 export default function Home() {
@@ -43,12 +48,11 @@ export default function Home() {
         }
       );
 
-      if (!response.ok) throw new Error("Network response was not ok");
+      if (!response.ok) throw new Error("Network error");
 
       const data = await response.json();
       setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
     } catch (error) {
-      console.error(error);
       setMessages((prev) => [
         ...prev,
         { role: "bot", text: "Server error. Please try again later." },
@@ -60,24 +64,95 @@ export default function Home() {
 
   return (
     <main
-      className={`${outfit.className} flex flex-col min-h-screen`}
-      style={{
-        background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
-      }}
+      className={`${inter.variable} ${sora.variable} flex h-screen bg-[#050508]`}
     >
-      <div className="flex flex-col min-h-[100vh] safe-area-inset-bottom">
-        {/* Header */}
-        <div className="sticky top-0 z-50 bg-black/70 backdrop-blur-md border-b border-gray-700 py-4 px-4 sm:px-6 shadow-lg">
-          <h1 className="text-center text-2xl sm:text-3xl font-bold text-green-400 tracking-wide">
-            🤖 RevTalk Bot
-          </h1>
+      {/* ================= SIDEBAR ================= */}
+      <aside className="hidden md:flex w-72 flex-col bg-gradient-to-b from-[#0a0a0f] to-[#0d0d18] border-r border-indigo-500/10">
+        <div className="p-4 border-b border-indigo-500/10">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg text-white">
+              ⚡
+            </div>
+            <div>
+              <h1 className="text-white font-semibold text-sm">
+                RevTalk AI
+              </h1>
+              <p className="text-green-400 text-xs">Online</p>
+            </div>
+          </div>
+
+          <button className="mt-4 w-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 py-2 rounded-lg text-sm hover:bg-indigo-500/20 transition">
+            + New Chat
+          </button>
         </div>
 
-        {/* Chat Container */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 w-full max-w-4xl mx-auto">
+        <div className="flex-1 p-3 overflow-y-auto text-sm text-gray-400">
+          <p className="mb-2 uppercase text-xs text-gray-600">Today</p>
+          <div className="space-y-2">
+            <div className="p-2 rounded-lg hover:bg-indigo-500/10 cursor-pointer">
+              EV Battery Comparison
+            </div>
+            <div className="p-2 rounded-lg hover:bg-indigo-500/10 cursor-pointer">
+              Charging Speed Guide
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ================= CHAT AREA ================= */}
+      <div className="flex-1 flex flex-col">
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-indigo-500/10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg text-white">
+              🔋
+            </div>
+            <div>
+              <h2 className="text-white font-semibold text-sm">
+                RevTalk Assistant
+              </h2>
+              <p className="text-xs text-gray-500">
+                EV Chargers Expert
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto px-6 py-8">
           {messages.length === 0 && (
-            <div className="text-center text-gray-300 mt-10 text-sm sm:text-base">
-              Ask anything about EVs...
+            <div className="flex flex-col items-center justify-center h-full text-center px-6">
+
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-5 shadow-lg text-2xl">
+                🔋
+              </div>
+
+              <h2 className="text-2xl font-bold text-white mb-2 font-heading">
+                How can I help you today?
+              </h2>
+
+              <p className="text-gray-500 mb-8 max-w-md">
+                Ask anything about EV batteries, charging systems, performance or cost.
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-3 w-full max-w-2xl">
+                {[
+                  "Best EV battery in 2025?",
+                  "How long does EV charging take?",
+                  "Compare lithium vs solid-state batteries",
+                  "EV maintenance cost breakdown",
+                ].map((q, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setInput(q)}
+                    className="p-4 rounded-xl bg-[#0f0f18] border border-indigo-500/10 hover:border-indigo-500/30 hover:bg-[#13131f] transition cursor-pointer"
+                  >
+                    <p className="text-sm text-gray-200">{q}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -89,10 +164,10 @@ export default function Home() {
               }`}
             >
               <div
-                className={`px-4 py-3 rounded-2xl max-w-[85%] sm:max-w-[75%] md:max-w-[65%] text-sm sm:text-base shadow-lg ${
+                className={`px-4 py-3 max-w-[75%] text-sm shadow-lg ${
                   msg.role === "user"
-                    ? "bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white rounded-br-none"
-                    : "bg-gray-800 text-gray-200 rounded-bl-none border border-gray-700"
+                    ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl rounded-br-md"
+                    : "bg-[#13131f] text-gray-200 rounded-2xl rounded-bl-md border border-indigo-500/10"
                 }`}
               >
                 {msg.text}
@@ -101,8 +176,16 @@ export default function Home() {
           ))}
 
           {loading && (
-            <div className="text-left text-gray-300 animate-pulse text-sm sm:text-base">
-              EV Bot is thinking...
+            <div className="flex items-center gap-3 text-gray-400">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white">
+                ⚡
+              </div>
+
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
+                <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-300"></span>
+              </div>
             </div>
           )}
 
@@ -110,25 +193,26 @@ export default function Home() {
         </div>
 
         {/* Input Area */}
-        <div className="flex-shrink-0 border-t border-gray-700 bg-black/80 p-4 sm:p-6">
-          <div className="flex gap-2 w-full max-w-4xl mx-auto">
+        <div className="border-t border-indigo-500/10 bg-[#0a0a12] px-6 py-4">
+          <div className="flex gap-2 max-w-4xl mx-auto">
             <input
               type="text"
-              placeholder="Type your question..."
+              placeholder="Ask about EV batteries..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              className="flex-1 bg-gray-900 text-white border border-gray-700 rounded-full px-4 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400"
+              className="flex-1 bg-[#11111a] text-white border border-indigo-500/20 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
             <button
               onClick={sendMessage}
               disabled={loading}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 text-sm sm:text-base rounded-full transition disabled:opacity-50 shadow-md"
+              className="bg-gradient-to-br from-emerald-500 to-teal-500 text-white px-6 py-3 text-sm rounded-full hover:opacity-90 transition disabled:opacity-50"
             >
               Send
             </button>
           </div>
         </div>
+
       </div>
     </main>
   );
