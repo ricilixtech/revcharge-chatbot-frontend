@@ -38,31 +38,20 @@ export default function Home() {
         "https://web-production-7d8f8.up.railway.app/chat",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ message: userMessage }),
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
+      if (!response.ok) throw new Error("Network response was not ok");
 
       const data = await response.json();
-
-      setMessages((prev) => [
-        ...prev,
-        { role: "bot", text: data.reply },
-      ]);
+      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
     } catch (error) {
-      console.error("Error:", error);
+      console.error(error);
       setMessages((prev) => [
         ...prev,
-        {
-          role: "bot",
-          text: "Server error. Please try again later.",
-        },
+        { role: "bot", text: "Server error. Please try again later." },
       ]);
     }
 
@@ -71,23 +60,23 @@ export default function Home() {
 
   return (
     <main
-      className={`${outfit.className} flex flex-col min-h-screen bg-cover bg-center bg-no-repeat`}
+      className={`${outfit.className} flex flex-col min-h-screen`}
       style={{
-        backgroundImage: "url('/pictures/Bg.png')",
+        background: "linear-gradient(135deg, #0f2027, #203a43, #2c5364)",
       }}
     >
-      <div className="flex flex-col min-h-screen bg-black/40">
+      <div className="flex flex-col min-h-[100vh] safe-area-inset-bottom">
         {/* Header */}
-        <div className="sticky top-0 z-50 bg-black/60 backdrop-blur-sm border-b border-gray-700 py-5 shadow-lg">
-          <h1 className="text-center text-2xl md:text-3xl font-bold text-green-600 tracking-wide">
-            🤖 RevTalk bot 
+        <div className="sticky top-0 z-50 bg-black/70 backdrop-blur-md border-b border-gray-700 py-4 px-4 sm:px-6 shadow-lg">
+          <h1 className="text-center text-2xl sm:text-3xl font-bold text-green-400 tracking-wide">
+            🤖 RevTalk Bot
           </h1>
         </div>
 
         {/* Chat Container */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 w-full max-w-4xl mx-auto">
           {messages.length === 0 && (
-            <div className="text-center text-gray-400 mt-10 text-sm sm:text-base">
+            <div className="text-center text-gray-300 mt-10 text-sm sm:text-base">
               Ask anything about EVs...
             </div>
           )}
@@ -102,7 +91,7 @@ export default function Home() {
               <div
                 className={`px-4 py-3 rounded-2xl max-w-[85%] sm:max-w-[75%] md:max-w-[65%] text-sm sm:text-base shadow-lg ${
                   msg.role === "user"
-                    ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-br-none"
+                    ? "bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white rounded-br-none"
                     : "bg-gray-800 text-gray-200 rounded-bl-none border border-gray-700"
                 }`}
               >
@@ -112,7 +101,7 @@ export default function Home() {
           ))}
 
           {loading && (
-            <div className="text-left text-gray-400 animate-pulse text-sm sm:text-base">
+            <div className="text-left text-gray-300 animate-pulse text-sm sm:text-base">
               EV Bot is thinking...
             </div>
           )}
@@ -121,20 +110,20 @@ export default function Home() {
         </div>
 
         {/* Input Area */}
-        <div className="sticky bottom-0 border-t border-gray-700 bg-black/80 p-4">
+        <div className="flex-shrink-0 border-t border-gray-700 bg-black/80 p-4 sm:p-6">
           <div className="flex gap-2 w-full max-w-4xl mx-auto">
             <input
               type="text"
-              placeholder="Type your fitness question..."
+              placeholder="Type your question..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-              className="flex-1 bg-gray-900 text-white border border-gray-700 rounded-full px-4 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
+              className="flex-1 bg-gray-900 text-white border border-gray-700 rounded-full px-4 py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-400"
             />
             <button
               onClick={sendMessage}
               disabled={loading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-sm sm:text-base rounded-full transition disabled:opacity-50 shadow-md"
+              className="bg-emerald-500 hover:bg-emerald-600 text-white px-6 py-3 text-sm sm:text-base rounded-full transition disabled:opacity-50 shadow-md"
             >
               Send
             </button>
