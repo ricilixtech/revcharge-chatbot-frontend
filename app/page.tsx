@@ -67,45 +67,14 @@ export default function Home() {
       className={`${inter.variable} ${sora.variable} flex h-screen bg-[#050508]`}
     >
       {/* ================= SIDEBAR ================= */}
-      <aside className="hidden md:flex w-72 flex-col bg-gradient-to-b from-[#0a0a0f] to-[#0d0d18] border-r border-indigo-500/10">
-        <div className="p-4 border-b border-indigo-500/10">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg text-white">
-              ⚡
-            </div>
-            <div>
-              <h1 className="text-white font-semibold text-sm">
-                RevTalk AI
-              </h1>
-              <p className="text-green-400 text-xs">Online</p>
-            </div>
-          </div>
-
-          <button className="mt-4 w-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 py-2 rounded-lg text-sm hover:bg-indigo-500/20 transition">
-            + New Chat
-          </button>
-        </div>
-
-        <div className="flex-1 p-3 overflow-y-auto text-sm text-gray-400">
-          <p className="mb-2 uppercase text-xs text-gray-600">Today</p>
-          <div className="space-y-2">
-            <div className="p-2 rounded-lg hover:bg-indigo-500/10 cursor-pointer">
-              EV Battery Comparison
-            </div>
-            <div className="p-2 rounded-lg hover:bg-indigo-500/10 cursor-pointer">
-              Charging Speed Guide
-            </div>
-          </div>
-        </div>
-      </aside>
 
       {/* ================= CHAT AREA ================= */}
       <div className="flex-1 flex flex-col">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-indigo-500/10">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg text-white">
+        <div className="flex text-center justify-between px-6 py-4 border-b border-indigo-500/10">
+          <div className="flex text-center gap-3">
+            <div className="w-8 h-8 text-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg text-white">
               🔋
             </div>
             <div>
