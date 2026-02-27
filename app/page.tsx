@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { Inter, Sora } from "next/font/google";
 
 const inter = Inter({
@@ -14,14 +15,14 @@ const sora = Sora({
 });
 
 export default function Home() {
-  const [messages, setMessages] = useState<
-    { role: "user" | "bot"; text: string }[]
-  >([]);
+  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState<string>(""); // store session ID per user
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Scroll to bottom whenever messages update
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -30,8 +31,18 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
+  // Generate or retrieve session ID in browser
+  useEffect(() => {
+    let storedSession = localStorage.getItem("chat_session");
+    if (!storedSession) {
+      storedSession = uuidv4();
+      localStorage.setItem("chat_session", storedSession);
+    }
+    setSessionId(storedSession);
+  }, []);
+
   const sendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || !sessionId) return;
 
     const userMessage = input;
     setInput("");
@@ -44,7 +55,7 @@ export default function Home() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage }),
+          body: JSON.stringify({ message: userMessage, session_id: sessionId }), // send session_id to backend
         }
       );
 
@@ -63,12 +74,7 @@ export default function Home() {
   };
 
   return (
-    <main
-      className={`${inter.variable} ${sora.variable} flex h-screen bg-[#050508]`}
-    >
-      {/* ================= SIDEBAR ================= */}
-
-      {/* ================= CHAT AREA ================= */}
+    <main className={`${inter.variable} ${sora.variable} flex h-screen bg-[#050508]`}>
       <div className="flex-1 flex flex-col">
 
         {/* Header */}
@@ -78,34 +84,25 @@ export default function Home() {
               🔋
             </div>
             <div>
-              <h2 className="text-white font-semibold text-sm">
-                RevTalk Assistant
-              </h2>
-              <p className="text-xs text-gray-500">
-                EV Chargers Expert
-              </p>
+              <h2 className="text-white font-semibold text-sm">RevTalk Assistant</h2>
+              <p className="text-xs text-gray-500">EV Chargers Expert</p>
             </div>
           </div>
-
         </div>
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto px-6 py-8">
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
-
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-5 shadow-lg text-2xl">
                 🔋
               </div>
-
               <h2 className="text-2xl font-bold text-white mb-2 font-heading">
                 How can I help you today?
               </h2>
-
               <p className="text-gray-500 mb-8 max-w-md">
                 Ask anything about EV batteries, charging systems, performance or cost.
               </p>
-
               <div className="grid sm:grid-cols-2 gap-3 w-full max-w-2xl">
                 {[
                   "Best EV battery in 2025?",
@@ -126,19 +123,12 @@ export default function Home() {
           )}
 
           {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`mb-4 flex ${
-                msg.role === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`px-4 py-3 max-w-[75%] text-sm shadow-lg ${
-                  msg.role === "user"
-                    ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl rounded-br-md"
-                    : "bg-[#13131f] text-gray-200 rounded-2xl rounded-bl-md border border-indigo-500/10"
-                }`}
-              >
+            <div key={index} className={`mb-4 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={`px-4 py-3 max-w-[75%] text-sm shadow-lg ${
+                msg.role === "user"
+                  ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl rounded-br-md"
+                  : "bg-[#13131f] text-gray-200 rounded-2xl rounded-bl-md border border-indigo-500/10"
+              }`}>
                 {msg.text}
               </div>
             </div>
@@ -149,7 +139,6 @@ export default function Home() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white">
                 ⚡
               </div>
-
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
