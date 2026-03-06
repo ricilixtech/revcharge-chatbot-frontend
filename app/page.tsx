@@ -14,15 +14,38 @@ const sora = Sora({
   variable: "--font-heading",
 });
 
+/* =========================
+   Markdown Table Parser
+========================= */
+
+function parseMarkdownTable(text: string) {
+  const lines = text.split("\n").filter((l) => l.trim().startsWith("|"));
+
+  if (lines.length < 2) return null;
+
+  const rows = lines.map((line) =>
+    line
+      .split("|")
+      .map((cell) => cell.trim())
+      .filter((c) => c !== "")
+  );
+
+  const headers = rows[0];
+  const data = rows.slice(2);
+
+  return { headers, data };
+}
+
 export default function Home() {
-  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([]);
+  const [messages, setMessages] = useState<
+    { role: "user" | "bot"; text: string }[]
+  >([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sessionId, setSessionId] = useState<string>(""); // store session ID per user
+  const [sessionId, setSessionId] = useState<string>("");
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to bottom whenever messages update
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -31,22 +54,37 @@ export default function Home() {
     scrollToBottom();
   }, [messages]);
 
-  // Generate or retrieve session ID in browser
+  /* =========================
+     Session ID
+  ========================= */
+
   useEffect(() => {
     let storedSession = localStorage.getItem("chat_session");
+
     if (!storedSession) {
       storedSession = uuidv4();
       localStorage.setItem("chat_session", storedSession);
     }
+
     setSessionId(storedSession);
   }, []);
+
+  /* =========================
+     Send Message
+  ========================= */
 
   const sendMessage = async () => {
     if (!input.trim() || !sessionId) return;
 
     const userMessage = input;
+
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", text: userMessage }]);
+
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", text: userMessage },
+    ]);
+
     setLoading(true);
 
     try {
@@ -55,18 +93,28 @@ export default function Home() {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage, session_id: sessionId }), // send session_id to backend
+          body: JSON.stringify({
+            message: userMessage,
+            session_id: sessionId,
+          }),
         }
       );
 
       if (!response.ok) throw new Error("Network error");
 
       const data = await response.json();
-      setMessages((prev) => [...prev, { role: "bot", text: data.reply }]);
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "bot", text: data.reply },
+      ]);
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { role: "bot", text: "Server error. Please try again later." },
+        {
+          role: "bot",
+          text: "Server error. Please try again later.",
+        },
       ]);
     }
 
@@ -78,32 +126,46 @@ export default function Home() {
       <div className="flex-1 flex flex-col">
 
         {/* Header */}
+
         <div className="flex text-center justify-between px-6 py-4 border-b border-indigo-500/10">
           <div className="flex text-center gap-3">
             <div className="w-8 h-8 text-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg text-white">
               🔋
             </div>
+
             <div>
-              <h2 className="text-white font-semibold text-sm">RevTalk Assistant</h2>
-              <p className="text-xs text-gray-500">EV Chargers Expert</p>
+              <h2 className="text-white font-semibold text-sm">
+                RevTalk Assistant
+              </h2>
+
+              <p className="text-xs text-gray-500">
+                EV Chargers Expert
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Messages Area */}
+        {/* Messages */}
+
         <div className="flex-1 overflow-y-auto px-6 py-8">
+
           {messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center px-6">
+
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-5 shadow-lg text-2xl">
                 🔋
               </div>
+
               <h2 className="text-2xl font-bold text-white mb-2 font-heading">
                 How can I help you today?
               </h2>
+
               <p className="text-gray-500 mb-8 max-w-md">
                 Ask anything about EV batteries, charging systems, performance or cost.
               </p>
+
               <div className="grid sm:grid-cols-2 gap-3 w-full max-w-2xl">
+
                 {[
                   "Best EV battery in 2025?",
                   "How long does EV charging take?",
@@ -118,27 +180,91 @@ export default function Home() {
                     <p className="text-sm text-gray-200">{q}</p>
                   </div>
                 ))}
+
               </div>
             </div>
           )}
 
-          {messages.map((msg, index) => (
-            <div key={index} className={`mb-4 flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`px-4 py-3 max-w-[75%] text-sm shadow-lg ${
-                msg.role === "user"
-                  ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl rounded-br-md"
-                  : "bg-[#13131f] text-gray-200 rounded-2xl rounded-bl-md border border-indigo-500/10"
-              }`}>
-                {msg.text}
+          {/* Chat Messages */}
+
+          {messages.map((msg, index) => {
+
+            const table = parseMarkdownTable(msg.text);
+
+            return (
+              <div
+                key={index}
+                className={`mb-4 flex ${
+                  msg.role === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+
+                <div
+                  className={`px-4 py-3 max-w-[75%] text-sm shadow-lg ${
+                    msg.role === "user"
+                      ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white rounded-2xl rounded-br-md"
+                      : "bg-[#13131f] text-gray-200 rounded-2xl rounded-bl-md border border-indigo-500/10"
+                  }`}
+                >
+
+                  {table ? (
+
+                    <div className="overflow-x-auto">
+
+                      <table className="border border-gray-700 text-xs">
+
+                        <thead>
+                          <tr>
+                            {table.headers.map((h, i) => (
+                              <th
+                                key={i}
+                                className="border border-gray-700 px-3 py-2 bg-[#1b1b28] text-left"
+                              >
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {table.data.map((row, i) => (
+                            <tr key={i}>
+                              {row.map((cell, j) => (
+                                <td
+                                  key={j}
+                                  className="border border-gray-700 px-3 py-2"
+                                >
+                                  {cell}
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+
+                      </table>
+
+                    </div>
+
+                  ) : (
+                    <span>{msg.text}</span>
+                  )}
+
+                </div>
+
               </div>
-            </div>
-          ))}
+            );
+          })}
+
+          {/* Loading */}
 
           {loading && (
             <div className="flex items-center gap-3 text-gray-400">
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white">
                 ⚡
               </div>
+
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></span>
                 <span className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-150"></span>
@@ -148,11 +274,15 @@ export default function Home() {
           )}
 
           <div ref={messagesEndRef} />
+
         </div>
 
-        {/* Input Area */}
+        {/* Input */}
+
         <div className="border-t border-indigo-500/10 bg-[#0a0a12] px-6 py-4">
+
           <div className="flex gap-2 max-w-4xl mx-auto">
+
             <input
               type="text"
               placeholder="Ask about EV batteries..."
@@ -161,6 +291,7 @@ export default function Home() {
               onKeyDown={(e) => e.key === "Enter" && sendMessage()}
               className="flex-1 bg-[#11111a] text-white border border-indigo-500/20 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder-gray-500"
             />
+
             <button
               onClick={sendMessage}
               disabled={loading}
@@ -168,7 +299,9 @@ export default function Home() {
             >
               Send
             </button>
+
           </div>
+
         </div>
 
       </div>
